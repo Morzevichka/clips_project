@@ -24,3 +24,4 @@ class AudioProcessing:
             indices = np.linspace(0, len(audio) - 1, video_len).astype(int)
 
             self.sounds[file_name.replace('.mp4', '')] = audio[indices]
+        return self
