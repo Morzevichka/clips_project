@@ -13,15 +13,14 @@ class VideoProcessing:
             'width': 540,
             'height': 380
         }
-
+        print('Video processing...')
         for file_name in os.listdir(self.video_dir):
 
-            print(f'Start processing: {file_name}')
-
             cap = cv2.VideoCapture(os.path.join(self.video_dir, file_name))
-            print(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             
             video_frames = []
+
+            print(f'Start processing: {file_name} ({cap.get(cv2.CAP_PROP_FRAME_COUNT)} frames)')
 
             while (cap.isOpened()):
 
@@ -35,11 +34,9 @@ class VideoProcessing:
 
                 video_frames.append(frame)
             
-            self.videos[file_name.replace('.mp4', '')] = video_frames
+            self.videos[file_name.replace('.mp4', '')] = np.array(video_frames)
             
             print(f'End processing: {file_name}\n')
 
     def get_length(self, file_name):
         return cv2.VideoCapture(os.path.join(self.video_dir, f'{file_name}.mp4')).get(cv2.CAP_PROP_FRAME_COUNT)
-
-

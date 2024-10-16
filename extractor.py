@@ -7,30 +7,33 @@ from selenium.webdriver.common.by import By
 
 import os
 import numpy as np 
-from typing import Any, List
+from typing import Any
 from pytubefix import YouTube
 from video_processing import VideoProcessing
+import matplotlib.pyplot as plt
 
 class Extractor:
     def __init__(self, file: Any, isFile: bool = True):
-        self.video_markers = {}
-        self.cwd = os.getcwd()
         self.video_ids = []
+        self.cwd = os.getcwd()
         self.base_yt_url = 'https://www.youtube.com/watch?v='
-        self.configure_webdriver()
+        self._configure_webdriver()
+        self.video_markers = {}
 
         if isFile:
             self._get_ids_from_file(file)
         else:
             self.video_ids = file
 
-    def configure_webdriver(self):
+    def _configure_webdriver(self):
         self.options = Options()
         self.options.add_argument('--headless')
         self.options.add_argument('--log-level=3')
         self.driver = webdriver.Chrome(options=self.options)
 
     def get_markers(self):
+        print('Getting markers...')
+
         for video_id in self.video_ids:
             self.driver.get(self.base_yt_url + video_id)
 
@@ -47,16 +50,18 @@ class Extractor:
                 x_y = c.split(',')
                 points.append([float(x_y[0]), float(x_y[1])])
 
-            x_c, y_c = zip(*points)
-   
-            y_c = [90.0 - y for y in y_c]
-            y_c = [y if y >= 0.0 else 0.0 for y in y_c]
+            markers = np.array(points)[:, 1]
+            markers = 90.0 - markers
+            markers = np.where(markers > 0.0, markers, 0.0)
+            markers = np.where(markers > 100.0, 100, markers)
 
-            transfrom_markers = self._transform_markers(video_id, list(zip(x_c, y_c)))
+            video_len = int(VideoProcessing().get_length(video_id))
 
-            self.video_markers[video_id] = transfrom_markers
+            marker_indices = np.linspace(0, video_len - 1, num=markers.size).astype(int)
 
-            print(f'Processed markers from: {video_id}...\n')
+            self.video_markers[video_id] = np.interp(np.arange(video_len), marker_indices, markers)
+
+            print(f'Completed: {video_id}')
 
         self.driver.quit()
         return self
@@ -68,6 +73,7 @@ class Extractor:
         if not os.path.exists(path):
             os.makedirs(path)
 
+        print('Video downloading...')
         for video_id in self.video_ids:
             if os.path.exists(os.path.join(path, f'{video_id}.mp4')):
                 print(f'Video {video_id} is already downloaded!')
@@ -92,11 +98,3 @@ class Extractor:
             print(f'File {file} was not found')
             return
         return self
-    
-    def _transform_markers(self, file_name: str, markers: List):
-        video_obj = VideoProcessing()
-        video_len = int(video_obj.get_length(file_name))
-
-        marker_indices = np.linspace(0, video_len - 1, num=len(markers)).astype(int)
-        
-        return np.interp(np.arange(video_len), marker_indices, np.array([m[1] for m in markers]))
