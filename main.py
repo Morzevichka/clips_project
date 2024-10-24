@@ -1,14 +1,11 @@
-from extractor import Extractor
-from video_processing import VideoProcessing
-from audio_processing import AudioProcessing
+from data_processor import DataProcessor
 
-# Downlaod videos and get markgers
-extractor = Extractor('data\\video_ids.txt', isFile=True)
-extractor.download()
-extractor.get_markers()
+def main():
+    dp = DataProcessor()
+    dp.process_train_test()
 
-video = VideoProcessing()
-video.processing()
+    for markers, video, audio in dp.process_to_model():
+        print(len(markers), len(video), len(audio))
 
-audio = AudioProcessing()
-audio.processing()
+if __name__ == '__main__':
+    main()
