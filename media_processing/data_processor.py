@@ -28,8 +28,7 @@ class DataProcessor:
     def load_dataset(self,
                             width: int = 144, 
                             height: int = 144,
-                            resolution: str = '360p',
-                            train=False):
+                            resolution: str = '360p'):
         with h5py.File('data\\video_audio_data.h5', 'a') as f:
             for video_id in tqdm(self.video_ids, desc='Processing Videos', unit='video'):
                 try:
@@ -37,10 +36,10 @@ class DataProcessor:
                 except KeyError:
                     self.extractor.download(video_id, resolution=resolution)
             
-                    video, _ = self.video_processor.get_video(video_id, width=width, height=height, train=train)
+                    video, _ = self.video_processor.get_video(video_id, width=width, height=height)
                     marker = self.extractor.get_markers(video_id, target_len=video.shape[0])
                     marker = self.extractor.preprocessing_markers(marker)
-                    audio = self.audio_processor.get_audio(video_id, target_len=video.shape[0], train=train)
+                    audio = self.audio_processor.get_audio(video_id, target_len=video.shape[0])
 
                     video_group = f.create_group(f'video_{video_id}')
 

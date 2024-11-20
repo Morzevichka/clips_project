@@ -18,8 +18,6 @@ class AudioProcessing:
         audio = self.max_min_pooling(audio, len(audio) // frames)
         indices = np.linspace(0, len(audio) - 1, target_len).astype(int)
         audio = abs(audio[indices])
-        if train:
-            audio += np.random.normal(0, 0.005, audio.shape)
         return audio.reshape(-1, 1)
     
     def max_min_pooling(self, signal, window_size):
