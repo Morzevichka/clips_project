@@ -147,12 +147,15 @@ class Net_v3(nn.Module):
         self.video_audio_cnn = nn.Sequential(
             nn.Conv2d(in_channels=4, out_channels=64, kernel_size=(3, 3), stride=1, padding=1),
             nn.ReLU(),
+            nn.BatchNorm2d(64, eps=0.001, momentum=0.01, affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.Conv2d(in_channels=64, out_channels=128, kernel_size=(3, 3), stride=1, padding=1),
             nn.ReLU(),
+            nn.BatchNorm2d(128, eps=0.001, momentum=0.01, affine=True, track_running_stats=True),
             nn.MaxPool2d(kernel_size=(2, 2)),
             nn.Conv2d(in_channels=128, out_channels=256, kernel_size=(3, 3), stride=1, padding=1),
             nn.ReLU(),
+            nn.BatchNorm2d(256, eps=0.001, momentum=0.01, affine=True, track_running_stats=True),
             nn.AdaptiveAvgPool2d(output_size=(1, 1))
         )
 
@@ -160,6 +163,7 @@ class Net_v3(nn.Module):
 
         self.fc = nn.Sequential(
             nn.Linear(256, 128),
+            nn.ReLU(),
             nn.Dropout(p=0.3),
             nn.Linear(128, 1),
             nn.Sigmoid()

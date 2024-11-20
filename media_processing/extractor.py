@@ -24,7 +24,7 @@ class Extractor:
         self.options.add_argument("--mute-audio")
         self.driver = webdriver.Chrome(options=self.options)
 
-    def get_markers(self, video_id: str, values_per_second: int):
+    def get_markers(self, video_id: str, target_len: int):
         frames, fps = VideoProcessing().get_len_fps(video_id)
         self.driver.get(self.base_yt_url + video_id)
         heatmap_svg = WebDriverWait(self.driver, 10)\
@@ -46,8 +46,8 @@ class Extractor:
         markers = np.where(markers > 0.0, markers, 0.0)
         markers = np.where(markers > 100, 100, markers)
 
-        marker_indices = np.linspace(0, frames // (fps // values_per_second) - 1, num=markers.size).astype(int)
-        markers = np.interp(np.arange(frames // (fps // values_per_second)), marker_indices, markers)
+        marker_indices = np.linspace(0, target_len - 1, num=markers.size).astype(int)
+        markers = np.interp(np.arange(target_len), marker_indices, markers)
 
         return markers.reshape(-1, 1)
                 
@@ -75,6 +75,8 @@ class Extractor:
         
         windows = np.lib.stride_tricks.sliding_window_view(markers.reshape(-1), 11)
         for i in range(windows.shape[0]):
-             if sum(windows[i]) >= 6:
-                  markers[i + 4] = 1
+            if sum(windows[i]) >= 6:
+                markers[i + 4] = 1
+            elif sum(windows[i]) <= 4:
+                markers[i + 4] = 0
         return markers

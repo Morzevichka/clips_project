@@ -9,17 +9,17 @@ class AudioProcessing:
         self.cwd = os.getcwd()
         self.video_dir = os.path.join(self.cwd, 'data\\videos')
 
-    def get_audio(self, video_id: str, values_per_second: int):
+    def get_audio(self, video_id: str, target_len: int, train=False):
         audio = AudioFileClip(os.path.join(self.video_dir, f'{video_id}.mp4')).to_soundarray(fps=16000)
         audio = audio.mean(axis=1)
         
         frames, fps = VideoProcessing().get_len_fps(video_id)
-        target_audio_len = int(frames // (fps // values_per_second))
         
         audio = self.max_min_pooling(audio, len(audio) // frames)
-        indices = np.linspace(0, len(audio) - 1, target_audio_len).astype(int)
+        indices = np.linspace(0, len(audio) - 1, target_len).astype(int)
         audio = abs(audio[indices])
-
+        if train:
+            audio += np.random.normal(0, 0.005, audio.shape)
         return audio.reshape(-1, 1)
     
     def max_min_pooling(self, signal, window_size):
