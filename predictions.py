@@ -24,9 +24,9 @@ class VideoTrimmer:
         model, video, audio = self.model.to(self.device), video.to(self.device), audio.to(self.device)
         model.eval()
         with torch.no_grad():
-            pred = (model(video, audio) > 0.5).float()
-            pred_plots(model(video, audio), pred)
-            pred = pred.view(-1).numpy()
+            pred = (model(video, audio) > 0.5).float().view(-1).cpu().numpy()
+            pred_m, pred_c = model(video, audio).cpu().numpy(), pred
+            pred_plots(pred_m, pred_c)
         return pred
     
     def extend_video(self, pred, frames):
@@ -72,7 +72,10 @@ class VideoTrimmer:
         
         video.close()
     
-    def predict_trimmed(self, video_name, clips):
+    def predict_trimmed(self, video_name, clips, rec_clip_duration=10):
+        if not os.path.exists(self.output_folder):
+            os.makedirs(self.output_folder)
+
         video_path = os.path.join(self.videos_folder, f'{video_name}.mp4')
         video, frames = VideoProcessing().get_video(video_name, height=96, width=96)
         audio = AudioProcessing().get_audio(video_name, video.shape[0])
@@ -83,7 +86,7 @@ class VideoTrimmer:
 
         interesting_moments = self.find_interesting_moments(video_predictions)
 
-        self.trim_video(video_name, video_path, interesting_moments, clips, target_len=10)
+        self.trim_video(video_name, video_path, interesting_moments, clips, target_len=rec_clip_duration)
 
 def pred_plots(pred_unclass, pred_class):
     pred = [pred_unclass, pred_class]
