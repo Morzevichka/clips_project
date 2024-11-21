@@ -1,0 +1,15 @@
+beautifulsoup4==4.12.3
+h5py==3.12.1
+ipython
+matplotlib==3.9.2
+numpy==2.1.2
+opencv-python==4.10.0.84
+pytubefix==8.1.1
+scikit-learn==1.5.2
+scipy==1.14.1
+selenium==4.25.0
+sympy==1.13.1
+torch==2.5.0
+torchaudio==2.5.0
+torchvision==0.20.0
+tqdm==4.66.5
