@@ -25,7 +25,6 @@ class Extractor:
         self.driver = webdriver.Chrome(options=self.options)
 
     def get_markers(self, video_id: str, target_len: int):
-        frames, fps = VideoProcessing().get_len_fps(video_id)
         self.driver.get(self.base_yt_url + video_id)
         heatmap_svg = WebDriverWait(self.driver, 10)\
             .until(expected_conditions\

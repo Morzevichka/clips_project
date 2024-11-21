@@ -13,7 +13,7 @@ class VideoTrimmer:
         self.videos_folder = videos_folder
         self.output_folder = output_folder
         self.model = self.load_model(model_name)
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     def load_model(self, model_name):
         model = Net_v2_Improved()
