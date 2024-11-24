@@ -8,8 +8,6 @@ from tqdm import tqdm
 import h5py
 import torch
 from sklearn.model_selection import train_test_split
-from torchvision.transforms import v2
-
 
 class DataProcessor:
     def __init__(self, 
@@ -26,9 +24,9 @@ class DataProcessor:
             self.video_ids = np.array(self.file)
 
     def load_dataset(self,
-                            width: int = 144, 
-                            height: int = 144,
-                            resolution: str = '360p'):
+                        width, 
+                        height,
+                        resolution = '360p'):
         with h5py.File('data\\video_audio_data.h5', 'a') as f:
             for video_id in tqdm(self.video_ids, desc='Processing Videos', unit='video'):
                 try:

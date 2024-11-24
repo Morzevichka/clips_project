@@ -3,30 +3,39 @@ from media_processing.audio_handler import AudioProcessing
 
 import torch
 from moviepy.video.io.VideoFileClip import VideoFileClip
-from model import Net_v2_Improved
+from model import *
 import os
 import numpy as np
 import matplotlib.pyplot as plt 
 
 class VideoTrimmer:
-    def __init__(self, videos_folder, output_folder, model_name):
+    def __init__(self, videos_folder, output_folder, models):
         self.videos_folder = videos_folder
         self.output_folder = output_folder
-        self.model = self.load_model(model_name)
+        self.models = models
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
-    def load_model(self, model_name):
-        model = Net_v2_Improved()
-        model.load_state_dict(torch.load(os.path.join(os.getcwd(), 'data', 'models', f'{model_name}.pth'), weights_only=True))
-        return model 
+    def predict_models(self, models, video, audio):
+        video, audio = video.to(self.device), audio.to(self.device)
+
+        all_predictions = []
+        for model in models:
+            model = model.to(self.device)
+            model.eval()
+            with torch.no_grad():
+                pred = (model(video, audio) > 0.5).float().cpu().numpy()
+            all_predictions.append(pred)
+        all_predictions = np.array(all_predictions).reshape(len(models), -1)
+
+        return np.where(np.count_nonzero(all_predictions == 1, axis=0) > 2, 1, 0)
         
-    def predict(self, video, audio):
+    def predict_model(self, model, video, audio):
         model, video, audio = self.model.to(self.device), video.to(self.device), audio.to(self.device)
         model.eval()
         with torch.no_grad():
             pred = (model(video, audio) > 0.5).float().view(-1).cpu().numpy()
-            pred_m, pred_c = model(video, audio).cpu().numpy(), pred
-            pred_plots(pred_m, pred_c)
+            # pred_m, pred_c = model(video, audio).cpu().numpy(), pred
+            # pred_plots(pred_m, pred_c)
         return pred
     
     def extend_video(self, pred, frames):
@@ -53,7 +62,7 @@ class VideoTrimmer:
         fps = video.fps
         len_video = video.duration
 
-        for i, (start, end) in enumerate(intervals):
+        for start, end in intervals:
             start, end = start / fps, end / fps
             duration_clip = end - start
             if duration_clip < target_len:
@@ -80,7 +89,10 @@ class VideoTrimmer:
         video, frames = VideoProcessing().get_video(video_name, height=96, width=96)
         audio = AudioProcessing().get_audio(video_name, video.shape[0])
 
-        prediction = self.predict(torch.Tensor(video), torch.Tensor(audio))
+        if isinstance(models, list):
+            prediction = self.predict_models(self.models, torch.Tensor(video), torch.Tensor(audio))
+        else:
+            prediction = self.predict_model(self.models, torch.Tensor(video), torch.Tensor(audio))
 
         video_predictions = self.extend_video(prediction, frames)
 

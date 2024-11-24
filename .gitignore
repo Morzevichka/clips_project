@@ -1,3 +1,7 @@
+__pycache__/
+media_processing/__pycache__/
 data/videos/
-video_audio_data.h5
+data/video_audio_data.h5
 data/trimmed/
+data/video_audio_data_224x224.h5
+data/models/

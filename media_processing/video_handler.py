@@ -9,7 +9,7 @@ class VideoProcessing:
         self.cwd = os.getcwd()
         self.video_dir = os.path.join(self.cwd, 'data\\videos')
 
-    def get_video(self, video_id: str, width=96, height=96):
+    def get_video(self, video_id: str, width, height):
         video_path = os.path.join(self.video_dir, f'{video_id}.mp4')
 
         if not os.path.exists(video_path):
