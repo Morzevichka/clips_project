@@ -23,10 +23,4 @@ conda install python=3.12.5 pip
 python -m pip -r /path/to/requirements.txt
 ```
 
-5. Also install moviepy dev
-   
-```bash
-python -m pip install git+https://github.com/Zulko/moviepy.git@bc8d1a831d2d1f61abfdf1779e8df95d523947a5
-```
-
-6. Choose {NAME_ENV} environment in your IDE to work with
+5. Choose {NAME_ENV} environment in your IDE to work with

@@ -1,5 +1,8 @@
+# cache folders
 __pycache__/
 media_processing/__pycache__/
+
+# video data and models folders
 data/videos/
 data/video_audio_data.h5
 data/trimmed/
