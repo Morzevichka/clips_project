@@ -34,8 +34,6 @@ class VideoTrimmer:
         model.eval()
         with torch.no_grad():
             pred = (model(video, audio) > 0.5).float().view(-1).cpu().numpy()
-            # pred_m, pred_c = model(video, audio).cpu().numpy(), pred
-            # pred_plots(pred_m, pred_c)
         return pred
     
     def extend_video(self, pred, frames):
@@ -112,3 +110,5 @@ def pred_plots(pred_unclass, pred_class):
     plt.subplots_adjust(hspace=0.3)
     plt.tight_layout()
     plt.show()
+
+# eQ8RnL3TR7g predict

@@ -222,5 +222,58 @@ class Net_EN_B0(nn.Module):
         combined_features = torch.cat((video_features, audio_features), dim=1)
         output = self.fc(combined_features)
         return output
-    
-print(models.efficientnet_b0().parameters)
+
+
+class Net_Own(nn.Module):
+    def __init__(self):
+        super(Net_Own, self).__init__()
+        
+        self.video_cnn = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1, stride=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1, stride=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1, stride=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2)
+        )
+
+        self.video_rnn = nn.LSTM(input_size=128, hidden_size=128, batch_first=True, bidirectional=True)
+
+        self.audio_cnn = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1, stride=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1, stride=1),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2)
+        )
+
+        self.audio_rnn = nn.LSTM(input_size=64, hidden_size=64, batch_first=True, bidirectional=True)
+
+        self.fc = nn.Sequential(
+            nn.Linear(128 + 64, 128),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.3),
+            nn.Linear(128, 128),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=0.3),
+            nn.Linear(128, 2)
+        )
+
+    def forward(self, video, audio):
+        video_features = self.video_cnn(video)
+        video_features, _ = self.video_rnn(video_features)
+        video_features = video_features.squeeze(0)
+
+        audio = audio.permute(1, 0).unsqueeze(0)
+        audio_features = self.audio_cnn(audio)
+        audio_features = audio_features.squeeze(-1).unsqueeze(1)
+        audio_features, _ = self.audio_rnn(audio_features)
+        audio_features = audio_features.squeeze(0).repeat(video_features.shape[0], 1)
+        
+        combined_features = torch.cat((video_features, audio_features), dim=1)
+        output = self.fc(combined_features)
+        return output
