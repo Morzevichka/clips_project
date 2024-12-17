@@ -34,11 +34,11 @@ class Net_MN_Small_Lite(nn.Module):
 
         self.audio_cnn = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(64),
             nn.MaxPool1d(kernel_size=2),
             nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(128),
             nn.AdaptiveAvgPool1d(1)
         )
@@ -48,7 +48,7 @@ class Net_MN_Small_Lite(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(1024 + 256, 128),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3, inplace=True),
+            nn.Dropout(p=0.3),
             nn.Linear(128, 1),
             nn.Sigmoid()
         )
@@ -81,26 +81,27 @@ class Net_MN_Small(nn.Module):
 
         self.audio_cnn = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(128),
             nn.MaxPool1d(kernel_size=2),
             nn.Conv1d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(256),
             nn.AdaptiveAvgPool1d(1)
         )
 
         self.audio_rnn = nn.LSTM(input_size=256, hidden_size=256, num_layers=2, batch_first=True, bidirectional=True, dropout=0.3)
 
+
         self.fc = nn.Sequential(
             nn.Linear(1024 + 512, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3, inplace=True),
+            nn.Dropout(p=0.3),
             nn.Linear(512, 128),
             nn.BatchNorm1d(128),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3, inplace=True),
+            nn.Dropout(p=0.3),
             nn.Linear(128, 1),
             nn.Sigmoid()
         )
@@ -133,11 +134,11 @@ class Net_MN_Large(nn.Module):
 
         self.audio_cnn = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(128),
             nn.MaxPool1d(kernel_size=2),
             nn.Conv1d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(256),
             nn.AdaptiveAvgPool1d(1)
         )
@@ -148,11 +149,11 @@ class Net_MN_Large(nn.Module):
             nn.Linear(1024 + 512, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3, inplace=True),
+            nn.Dropout(p=0.3),
             nn.Linear(512, 128),
             nn.BatchNorm1d(128),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3, inplace=True),
+            nn.Dropout(p=0.3),
             nn.Linear(128, 1),
             nn.Sigmoid()
         )
@@ -185,26 +186,26 @@ class Net_EN_B0(nn.Module):
 
         self.audio_cnn = nn.Sequential(
             nn.Conv1d(in_channels=1, out_channels=128, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(128),
             nn.MaxPool1d(kernel_size=2),
             nn.Conv1d(in_channels=128, out_channels=256, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(inplace=True),
+            nn.ReLU(),
             nn.BatchNorm1d(256),
             nn.AdaptiveAvgPool1d(1)
         )
-
+        
         self.audio_rnn = nn.LSTM(input_size=256, hidden_size=256, num_layers=2, batch_first=True, bidirectional=True, dropout=0.3)
 
         self.fc = nn.Sequential(
             nn.Linear(1024 + 512, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3, inplace=True),
+            nn.Dropout(p=0.3),
             nn.Linear(512, 128),
             nn.BatchNorm1d(128),
             nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3, inplace=True),
+            nn.Dropout(p=0.3),
             nn.Linear(128, 1),
             nn.Sigmoid()
         )
@@ -219,61 +220,6 @@ class Net_EN_B0(nn.Module):
         audio_features = audio_features.squeeze(-1).unsqueeze(1)
         audio_features, _ = self.audio_rnn(audio_features)
         audio_features = audio_features.squeeze(0).repeat(video_features.shape[0], 1)
-        combined_features = torch.cat((video_features, audio_features), dim=1)
-        output = self.fc(combined_features)
-        return output
-
-
-class Net_Own(nn.Module):
-    def __init__(self):
-        super(Net_Own, self).__init__()
-        
-        self.video_cnn = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1, stride=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1, stride=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=64, out_channels=128, kernel_size=3, padding=1, stride=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2)
-        )
-
-        self.video_rnn = nn.LSTM(input_size=128, hidden_size=128, batch_first=True, bidirectional=True)
-
-        self.audio_cnn = nn.Sequential(
-            nn.Conv2d(in_channels=3, out_channels=32, kernel_size=3, padding=1, stride=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2),
-            nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1, stride=1),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2)
-        )
-
-        self.audio_rnn = nn.LSTM(input_size=64, hidden_size=64, batch_first=True, bidirectional=True)
-
-        self.fc = nn.Sequential(
-            nn.Linear(128 + 64, 128),
-            nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3),
-            nn.Linear(128, 128),
-            nn.ReLU(inplace=True),
-            nn.Dropout(p=0.3),
-            nn.Linear(128, 2)
-        )
-
-    def forward(self, video, audio):
-        video_features = self.video_cnn(video)
-        video_features, _ = self.video_rnn(video_features)
-        video_features = video_features.squeeze(0)
-
-        audio = audio.permute(1, 0).unsqueeze(0)
-        audio_features = self.audio_cnn(audio)
-        audio_features = audio_features.squeeze(-1).unsqueeze(1)
-        audio_features, _ = self.audio_rnn(audio_features)
-        audio_features = audio_features.squeeze(0).repeat(video_features.shape[0], 1)
-        
         combined_features = torch.cat((video_features, audio_features), dim=1)
         output = self.fc(combined_features)
         return output

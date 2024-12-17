@@ -9,9 +9,9 @@ scikit-learn==1.5.2
 seaborn==0.13.2
 scipy==1.14.1
 selenium==4.25.0
+torch
+torchaudio
+torchvision
 sympy==1.13.1
-torch==2.5.0
-torchaudio==2.5.0
-torchvision==0.20.0
 tqdm==4.66.5
 git+https://github.com/Zulko/moviepy.git@bc8d1a831d2d1f61abfdf1779e8df95d523947a5
